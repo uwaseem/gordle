@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Gordle</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <button id="refresh" class="icon-button" type="button" aria-label="Refresh" title="Refresh">
+      <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+        <path d="M20 12a8 8 0 1 1-2.34-5.66"/>
+        <path d="M20 3v5h-5"/>
+      </svg>
+    </button>
+    <p id="status" class="status" role="status" aria-live="polite"></p>
+  </header>
+
+  <main id="boards" class="boards"></main>
+
+  <nav id="keyboard" class="keyboard" aria-label="Keyboard"></nav>
+
+  <dialog id="confirm" class="confirm" aria-labelledby="confirm-text">
+    <p id="confirm-text">Start a new game? Your progress will be lost</p>
+    <div class="confirm-actions">
+      <button id="confirm-cancel" class="text-button" type="button" autofocus>Cancel</button>
+      <button id="confirm-new" class="text-button primary" type="button">New game</button>
+    </div>
+  </dialog>
+
+  <script src="words.js"></script>
+  <script src="game.js"></script>
+  <script src="ui.js"></script>
+</body>
+</html>

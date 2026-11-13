@@ -1,0 +1,30 @@
+# Gordle
+
+A word-guessing game played across 32 hidden words at once, with one shared set of 37 guesses.
+
+**Play it:** https://uwaseem.github.io/gordle/
+
+## How it works
+
+- Every guess is a 5-letter word, and it goes to all unsolved boards at once.
+- Each board shows the usual colours: green for the right letter in the right spot, yellow for a letter that's in the word but elsewhere, grey for a letter that isn't in it.
+- Solve all 32 boards within 37 guesses to win.
+- Tap a board to select it. The keyboard then shows colours for that board only.
+
+The game's terms are defined in [GLOSSARY.md](GLOSSARY.md).
+
+## Run it locally
+
+No build step and no dependencies. Open `index.html` in a browser.
+
+## Tests
+
+The game logic in `game.js` has tests that use Node's built-in test runner:
+
+```bash
+node --test
+```
+
+## License
+
+[MIT](LICENSE)
