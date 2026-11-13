@@ -1,2 +1,8 @@
 .DS_Store
 .claude/
+
+# Agent tooling (kept local only)
+CLAUDE.md
+docs/agents/
+docs/adr/
+GLOSSARY.md

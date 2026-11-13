@@ -13,8 +13,6 @@ Inspired by [Wordle](https://www.nytimes.com/games/wordle/) and [Duotrigordle](h
 - Solve all 32 boards within 37 guesses to win.
 - Tap a board to select it. The keyboard then shows colours for that board only.
 
-The game's terms are defined in [GLOSSARY.md](GLOSSARY.md).
-
 ## Run it locally
 
 No build step and no dependencies. Open `index.html` in a browser.
