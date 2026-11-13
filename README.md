@@ -2,6 +2,8 @@
 
 A word-guessing game played across 32 hidden words at once, with one shared set of 37 guesses.
 
+Inspired by [Wordle](https://www.nytimes.com/games/wordle/) and [Duotrigordle](https://duotrigordle.com/), which already plays Wordle across 32 boards at once. This is my own version, built from scratch. It isn't affiliated with or endorsed by either.
+
 **Play it:** https://uwaseem.github.io/gordle/
 
 ## How it works
