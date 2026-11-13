@@ -4,6 +4,8 @@ A word-guessing game played across 32 hidden words at once, with one shared set 
 
 Inspired by [Wordle](https://www.nytimes.com/games/wordle/) and [Duotrigordle](https://duotrigordle.com/), which already plays Wordle across 32 boards at once. This is my own version, built from scratch. It isn't affiliated with or endorsed by either.
 
+Words come from the public-domain ENABLE word list. Word frequency scores come from [wordfreq](https://github.com/rspeer/wordfreq) by Robyn Speer, whose data is licensed under [CC-BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/).
+
 **Play it:** https://uwaseem.github.io/gordle/
 
 ## How it works
@@ -19,7 +21,7 @@ No build step and no dependencies. Open `index.html` in a browser.
 
 ## Tests
 
-The game logic in `game.js` has tests that use Node's built-in test runner:
+The game logic in `game.js` and the shipped Word List in `words.js` have tests that use Node's built-in test runner:
 
 ```bash
 node --test
