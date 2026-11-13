@@ -3,11 +3,16 @@
 // tiles so a keystroke touches at most one tile per unsolved Board.
 
 let game;
+let mode; // "easy" or "hard": the Mode new games start in
+let pendingMode = null; // the Mode the open confirm dialog would switch to
 
 const WORD_LENGTH = 5;
 const FLASH_MS = 1600;
 const REVEAL_MARGIN_PX = 12;
 const KEY_ROWS = ["qwertyuiop", "asdfghjkl", "zxcvbnm"];
+const MODE_KEY = "gordle-mode";
+const MODE_NAMES = { easy: "Easy", hard: "Hard" };
+const REFRESH_CONFIRM_TEXT = "Start a new game? Your progress will be lost";
 const REJECTION_TEXT = {
   length: "Not enough letters",
   "not-in-list": "Not in word list",
@@ -23,6 +28,8 @@ const boardsEl = document.getElementById("boards");
 const keyboardEl = document.getElementById("keyboard");
 const refreshEl = document.getElementById("refresh");
 const confirmEl = document.getElementById("confirm");
+const confirmTextEl = document.getElementById("confirm-text");
+const modeEl = document.getElementById("mode");
 const topbarEl = document.querySelector(".topbar");
 
 const boardViews = []; // per Board: { el, selectEl, drawn, current, answered, confirmed }
@@ -427,7 +434,7 @@ function onKeyDown(event) {
 // --- New games ---
 
 function startNewGame() {
-  game = createGame({ words: WORDS, commonCount: COMMON_COUNT, answerCount: ANSWER_COUNT }, "easy");
+  game = createGame({ words: WORDS, commonCount: COMMON_COUNT, answerCount: ANSWER_COUNT }, mode);
   typed = "";
   typedShown = "";
   renderTypedValidity();
@@ -448,11 +455,63 @@ function startNewGame() {
   window.scrollTo(0, 0);
 }
 
+// A new game only needs confirming once a Guess has been made in a game
+// that is still being played.
+function progressAtRisk() {
+  return game.guesses.length > 0 && game.status === "playing";
+}
+
 function onRefresh() {
-  if (game.guesses.length > 0 && game.status === "playing") {
+  if (progressAtRisk()) {
+    pendingMode = null;
+    confirmTextEl.textContent = REFRESH_CONFIRM_TEXT;
     confirmEl.showModal();
   } else {
     startNewGame();
+  }
+}
+
+// --- Mode ---
+
+// Blocked or broken storage falls back to Easy.
+function loadMode() {
+  try {
+    return localStorage.getItem(MODE_KEY) === "hard" ? "hard" : "easy";
+  } catch {
+    return "easy";
+  }
+}
+
+function saveMode() {
+  try {
+    localStorage.setItem(MODE_KEY, mode);
+  } catch {
+    // Storage is blocked; the Mode lasts until the page is reloaded.
+  }
+}
+
+function renderMode() {
+  for (const button of modeEl.querySelectorAll("button[data-mode]")) {
+    button.setAttribute("aria-pressed", String(button.dataset.mode === mode));
+  }
+}
+
+function switchMode(next) {
+  mode = next;
+  saveMode();
+  renderMode();
+  startNewGame();
+}
+
+function onModeChosen(next) {
+  if (next === mode) return;
+  if (progressAtRisk()) {
+    pendingMode = next;
+    confirmTextEl.textContent =
+      "Switch to " + MODE_NAMES[next] + "? This starts a new game and your progress will be lost";
+    confirmEl.showModal();
+  } else {
+    switchMode(next);
   }
 }
 
@@ -474,6 +533,11 @@ keyboardEl.addEventListener("click", (event) => {
 });
 refreshEl.addEventListener("mousedown", keepFocusOff);
 refreshEl.addEventListener("click", onRefresh);
+modeEl.addEventListener("mousedown", keepFocusOff);
+modeEl.addEventListener("click", (event) => {
+  const button = event.target.closest("button[data-mode]");
+  if (button) onModeChosen(button.dataset.mode);
+});
 // A press on the backdrop or dialog text would pull focus off the buttons.
 confirmEl.addEventListener("mousedown", (event) => {
   if (!event.target.closest("button")) event.preventDefault();
@@ -481,14 +545,19 @@ confirmEl.addEventListener("mousedown", (event) => {
 boardsEl.addEventListener("animationend", () => boardsEl.classList.remove("shake"));
 document.getElementById("confirm-cancel").addEventListener("click", () => confirmEl.close());
 document.getElementById("confirm-new").addEventListener("click", () => {
+  const next = pendingMode;
   confirmEl.close();
-  startNewGame();
+  if (next) switchMode(next);
+  else startNewGame();
 });
-// Closing the dialog hands focus back to Refresh; drop it so the next
-// physical Enter submits the typed Guess instead of reopening the dialog.
+// Closing the dialog hands focus back to Refresh or the Mode switch; drop it
+// so the next physical Enter submits the typed Guess instead of reopening it.
 confirmEl.addEventListener("close", () => {
+  pendingMode = null;
   if (focusIsOnButton()) document.activeElement.blur();
 });
 document.addEventListener("keydown", onKeyDown);
 
+mode = loadMode();
+renderMode();
 startNewGame();

@@ -89,7 +89,7 @@ button:focus-visible {
   top: 0;
   z-index: 10;
   display: grid;
-  grid-template-columns: 36px 1fr 36px;
+  grid-template-columns: auto auto 1fr;
   align-items: center;
   gap: 8px;
   padding: calc(4px + env(safe-area-inset-top, 0px)) calc(var(--gutter) + env(safe-area-inset-right, 0px)) 4px calc(var(--gutter) + env(safe-area-inset-left, 0px));
@@ -116,8 +116,36 @@ button:focus-visible {
   stroke-linejoin: round;
 }
 
+/* Easy | Hard: two buttons joined into one control. */
+.mode-switch {
+  display: flex;
+  height: 36px;
+  padding: 3px;
+  border-radius: 6px;
+  background: var(--panel);
+}
+
+.mode-option {
+  padding: 0 10px;
+  border-radius: 4px;
+  background: transparent;
+  color: var(--text-dim);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.mode-option[aria-pressed="true"] {
+  background: var(--key);
+  color: var(--key-ink);
+}
+
+@media (max-width: 360px) {
+  .topbar { gap: 6px; }
+  .mode-option { padding: 0 5px; font-size: 12px; }
+}
+
 .status {
-  grid-column: 2;
+  min-width: 0;
   text-align: center;
   font-size: 14px;
   font-weight: 600;
@@ -285,7 +313,7 @@ button:focus-visible {
 .key:active { filter: brightness(1.2); }
 
 @media (hover: hover) {
-  .key:hover, .icon-button:hover, .text-button:hover { filter: brightness(1.15); }
+  .key:hover, .icon-button:hover, .text-button:hover, .mode-option:hover { filter: brightness(1.15); }
 }
 
 /* Refresh confirmation */

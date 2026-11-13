@@ -13,6 +13,7 @@ Words come from the public-domain ENABLE word list. Word frequency scores come f
 - Every guess is a 5-letter word, and it goes to all unsolved boards at once.
 - Each board shows the usual colours: green for the right letter in the right spot, yellow for a letter that's in the word but elsewhere, grey for a letter that isn't in it.
 - Solve all 32 boards within 37 guesses to win.
+- Pick **Easy** or **Hard** in the top bar. Easy's answers are common words; Hard adds less common ones. Any real 5-letter word is accepted as a guess in both.
 - Tap a board to select it. The keyboard then shows colours for that board only.
 
 ## Run it locally
