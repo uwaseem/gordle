@@ -4548,4 +4548,8 @@ const WORDS = [
   { n: 4547, w: "winds" },
   { n: 4548, w: "worry" },
 ];
-if (typeof module !== "undefined") module.exports = { WORDS };
+// Answer boundaries: Easy draws Word Numbers 1..COMMON_COUNT, Hard draws
+// 1..ANSWER_COUNT. Until the Word List is split into Tiers, both are every word.
+const COMMON_COUNT = 4548;
+const ANSWER_COUNT = 4548;
+if (typeof module !== "undefined") module.exports = { WORDS, COMMON_COUNT, ANSWER_COUNT };

@@ -427,7 +427,7 @@ function onKeyDown(event) {
 // --- New games ---
 
 function startNewGame() {
-  game = createGame(WORDS);
+  game = createGame({ words: WORDS, commonCount: COMMON_COUNT, answerCount: ANSWER_COUNT }, "easy");
   typed = "";
   typedShown = "";
   renderTypedValidity();

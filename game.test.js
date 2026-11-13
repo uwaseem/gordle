@@ -66,10 +66,15 @@ function range(from, to) {
   return out;
 }
 
+// A Word List with its two boundaries; both default to every entry.
+function listOf(words, commonCount = words.length, answerCount = commonCount) {
+  return { words, commonCount, answerCount };
+}
+
 // A game whose Answers are exactly Word Numbers 1..32 of the list, in order.
 function gameWith(answers = [], extras = []) {
   const words = makeWordList(answers, extras);
-  const game = createGame(words, randomFor(range(1, BOARD_COUNT), words.length));
+  const game = createGame(listOf(words), "easy", randomFor(range(1, BOARD_COUNT), words.length));
   return { game, words };
 }
 
@@ -101,7 +106,7 @@ test("game.js runs as a classic script with no module object and no DOM", () => 
       for (let n = 1; n <= 40; n++) {
         words.push({ n, w: "aaa" + String.fromCharCode(96 + Math.ceil(n / 26)) + String.fromCharCode(97 + (n % 26)) });
       }
-      const game = createGame(words);
+      const game = createGame({ words, commonCount: 40, answerCount: 40 }, "easy");
       const accepted = submitGuess(game, words[0].w).ok;
       return JSON.stringify({
         boards: BOARD_COUNT, limit: GUESS_LIMIT, answers: game.answers.length, accepted,
@@ -242,7 +247,7 @@ test("drawAnswers: throws when count exceeds the entries", () => {
 
 test("createGame: starts playing with 32 different Answers and no guesses", () => {
   const words = makeWordList();
-  const game = createGame(words);
+  const game = createGame(listOf(words), "easy");
   assert.strictEqual(game.status, "playing");
   assert.deepStrictEqual(game.guesses, []);
   assert.strictEqual(game.answers.length, 32);
@@ -255,7 +260,70 @@ test("createGame: uses the injected random function", () => {
 });
 
 test("createGame: throws with fewer than 32 words", () => {
-  assert.throws(() => createGame(makeWordList().slice(0, 31), () => 0));
+  assert.throws(() => createGame(listOf(makeWordList().slice(0, 31)), "easy", () => 0));
+});
+
+// A 100-word list: 40 Common, 30 Uncommon, 30 Guess-only.
+const TIERED = listOf(makeWordList(), 40, 70);
+
+// Word Numbers drawn across many games, using the real random function.
+function numbersDrawn(list, mode, games = 200) {
+  const numberOf = new Map(list.words.map((e) => [e.w, e.n]));
+  const seen = new Set();
+  for (let i = 0; i < games; i++) {
+    for (const answer of createGame(list, mode).answers) seen.add(numberOf.get(answer));
+  }
+  return seen;
+}
+
+test("createGame: Easy only draws Word Numbers from 1 to the Common count", () => {
+  const seen = numbersDrawn(TIERED, "easy");
+  assert.ok(Math.max(...seen) <= 40);
+  assert.ok(seen.has(1) && seen.has(40));
+});
+
+test("createGame: Easy's injected random maps onto 1..Common count", () => {
+  const game = createGame(TIERED, "easy", randomFor([40].concat(range(1, 31)), 40));
+  assert.strictEqual(game.answers[0], TIERED.words[39].w);
+});
+
+test("createGame: Hard draws up to the Answer count and reaches both ends", () => {
+  const seen = numbersDrawn(TIERED, "hard");
+  assert.ok(Math.max(...seen) <= 70);
+  assert.ok(seen.has(1) && seen.has(70));
+  assert.ok([...seen].some((n) => n > 40), "Hard reaches Uncommon words");
+});
+
+test("createGame: Hard's injected random maps onto 1..Answer count", () => {
+  const numbers = [1, 70].concat(range(2, 31));
+  const game = createGame(TIERED, "hard", randomFor(numbers, 70));
+  assert.strictEqual(game.answers[0], TIERED.words[0].w);
+  assert.strictEqual(game.answers[1], TIERED.words[69].w);
+});
+
+test("createGame: neither Mode draws a Guess-only word", () => {
+  for (const mode of ["easy", "hard"]) {
+    assert.ok(Math.max(...numbersDrawn(TIERED, mode)) <= 70, mode);
+  }
+});
+
+test("createGame: Guess-only words are accepted as Guesses in both Modes", () => {
+  for (const mode of ["easy", "hard"]) {
+    const game = createGame(TIERED, mode);
+    const guessOnly = TIERED.words.find((e) => e.n === 100).w;
+    assert.deepStrictEqual(submitGuess(game, guessOnly), { ok: true }, mode);
+  }
+});
+
+test("createGame: throws when a Mode's pool is smaller than 32 words", () => {
+  const smallCommon = listOf(makeWordList(), 31, 70);
+  assert.throws(() => createGame(smallCommon, "easy"));
+  assert.doesNotThrow(() => createGame(smallCommon, "hard"));
+  assert.throws(() => createGame(listOf(makeWordList(), 31, 31), "hard"));
+});
+
+test("createGame: throws on an unknown Mode", () => {
+  assert.throws(() => createGame(TIERED, "medium"));
 });
 
 // --- submitGuess: rejections ----------------------------------------------

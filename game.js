@@ -25,17 +25,23 @@ function scoreGuess(guess, answer) {
   return marks;
 }
 
-// The Draw: picks random Word Numbers from 1 to the highest in the list,
-// drawing again whenever a number was already picked.
-function drawAnswers(words, count = BOARD_COUNT, random = Math.random) {
-  if (count > words.length) {
-    throw new Error(`Cannot draw ${count} Answers from ${words.length} words`);
-  }
+// The Draw: picks random Word Numbers from 1 to the highest allowed (by
+// default the highest in the list), drawing again whenever a number was
+// already picked.
+function drawAnswers(words, count = BOARD_COUNT, random = Math.random, highest = null) {
   const wordsByNumber = new Map();
-  let highest = 0;
+  let top = 0;
   for (const entry of words) {
     wordsByNumber.set(entry.n, entry.w);
-    if (entry.n > highest) highest = entry.n;
+    if (entry.n > top) top = entry.n;
+  }
+  if (highest === null) highest = top;
+  let pool = 0;
+  for (const entry of words) {
+    if (entry.n <= highest) pool++;
+  }
+  if (count > pool) {
+    throw new Error(`Cannot draw ${count} Answers from ${pool} words`);
   }
   const picked = new Set();
   const answers = [];
@@ -48,9 +54,19 @@ function drawAnswers(words, count = BOARD_COUNT, random = Math.random) {
   return answers;
 }
 
-function createGame(words, random = Math.random) {
+// A Mode's highest Answer Word Number: Easy stops at the Common count, Hard
+// at the Answer count. Words above the Answer count are Guess-only.
+function highestAnswer(wordList, mode) {
+  if (mode === "easy") return wordList.commonCount;
+  if (mode === "hard") return wordList.answerCount;
+  throw new Error(`Unknown Mode: ${mode}`);
+}
+
+// wordList is { words, commonCount, answerCount }; mode is "easy" or "hard".
+function createGame(wordList, mode, random = Math.random) {
+  const { words } = wordList;
   return {
-    answers: drawAnswers(words, BOARD_COUNT, random),
+    answers: drawAnswers(words, BOARD_COUNT, random, highestAnswer(wordList, mode)),
     guesses: [],
     status: "playing",
     wordList: new Set(words.map((entry) => entry.w)),
