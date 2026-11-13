@@ -266,12 +266,22 @@ test("createGame: throws with fewer than 32 words", () => {
 // A 100-word list: 40 Common, 30 Uncommon, 30 Guess-only.
 const TIERED = listOf(makeWordList(), 40, 70);
 
-// Word Numbers drawn across many games, using the real random function.
+// A repeatable stand-in for Math.random (a small linear congruential generator).
+function seededRandom(seed) {
+  let state = seed;
+  return () => {
+    state = (state * 1664525 + 1013904223) % 4294967296;
+    return state / 4294967296;
+  };
+}
+
+// Word Numbers drawn across many games, using an injected seeded random.
 function numbersDrawn(list, mode, games = 200) {
   const numberOf = new Map(list.words.map((e) => [e.w, e.n]));
+  const random = seededRandom(42);
   const seen = new Set();
   for (let i = 0; i < games; i++) {
-    for (const answer of createGame(list, mode).answers) seen.add(numberOf.get(answer));
+    for (const answer of createGame(list, mode, random).answers) seen.add(numberOf.get(answer));
   }
   return seen;
 }

@@ -461,11 +461,17 @@ function progressAtRisk() {
   return game.guesses.length > 0 && game.status === "playing";
 }
 
+// Asks before a new game; next is the Mode it would switch to, or null to
+// keep the current one.
+function openConfirm(text, next) {
+  pendingMode = next;
+  confirmTextEl.textContent = text;
+  confirmEl.showModal();
+}
+
 function onRefresh() {
   if (progressAtRisk()) {
-    pendingMode = null;
-    confirmTextEl.textContent = REFRESH_CONFIRM_TEXT;
-    confirmEl.showModal();
+    openConfirm(REFRESH_CONFIRM_TEXT, null);
   } else {
     startNewGame();
   }
@@ -506,10 +512,7 @@ function switchMode(next) {
 function onModeChosen(next) {
   if (next === mode) return;
   if (progressAtRisk()) {
-    pendingMode = next;
-    confirmTextEl.textContent =
-      "Switch to " + MODE_NAMES[next] + "? This starts a new game and your progress will be lost";
-    confirmEl.showModal();
+    openConfirm("Switch to " + MODE_NAMES[next] + "? This starts a new game and your progress will be lost", next);
   } else {
     switchMode(next);
   }
